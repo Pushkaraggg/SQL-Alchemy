@@ -4,7 +4,8 @@ Dive into advanced SQL concepts and techniques with this repository. Explore com
 
 
 
---Find % change in amazon revenue.
+#### Find % change in amazon revenue.
+```sql
 CREATE VIEW cte AS 
 SELECT EXTRACT(MONTH FROM created_at) AS month,
 SUM(value) AS current_rev
@@ -15,12 +16,14 @@ ORDER BY 1 ASC
 CREATE VIEW cte2 AS SELECT *,
 LAG(current_rev,1) OVER(ORDER BY month) AS prev_revenue
 FROM cte1
+```
 
+```sql
 SELECT*,
 ((((current_rev-prev_revenue)/CAST(prev_revenue AS FLOAT))*100)) AS percentage
 FROM cte2
 WHERE prev_revenue IS NOT null
-
+```
 
 
 
