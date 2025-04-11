@@ -27,9 +27,7 @@ WHERE prev_revenue IS NOT null
 
 
 
-
---Identify customers who have invested in at least two funds with opposite performance trends 
---(one increasing and the other decreasing) over the last 6 months.
+#### Identify customers who have invested in at least two funds with opposite performance trends (one increasing and the other decreasing) over the last 6 months.
 ```sql
 CREATE TABLE Customerss (
     CustomerID INT PRIMARY KEY,
@@ -112,9 +110,8 @@ WHERE performance_status IS NOT NULL
 
 
 
---Find the top 5 performing funds within each region based on their weighted average returns, 
---accounting for the size of investments in each fund.
-
+#### Find the top 5 performing funds within each region based on their weighted average returns, accounting for the size of investments in each fund.
+```sql
 CREATE VIEW region_amt  AS SELECT c.customerid,customername,
 amount,f.region,t.fundid,
 EXTRACT(MONTH FROM transactiondate) AS Month
@@ -132,14 +129,15 @@ ORDER BY 1)
 SELECT *,(ROUND((total_sum/SUM(total_sum) OVER(PARTITION BY region))*100)) AS avg_return
 FROM per_region_sum
 ORDER BY fundid
+```
 
 
 
 
 
 
-----Find all the users who were active for 3 consecutive days or more.
-
+#### Find all the users who were active for 3 consecutive days or more.
+```sql
 CREATE TABLE sf_events
 (date DATE,account_id VARCHAR(10),user_id VARCHAR(10));
 
@@ -153,7 +151,8 @@ VALUES('2021-01-01', 'A1', 'U1'),
 ('2020-12-06', 'A3', 'U7'), ('2020-12-06', 'A3', 'U6'), ('2021-01-14', 'A3', 'U6'), 
 ('2021-02-07', 'A1', 'U1'), ('2021-02-10', 'A1', 'U2'), ('2021-02-01', 'A2', 'U4'), 
 ('2021-02-01', 'A2', 'U5'), ('2020-12-05', 'A1', 'U8');
-
+```
+```sql
  SELECT * FROM sf_events
 
 WITH cte AS (SELECT date,user_id,
@@ -171,23 +170,23 @@ FROM cte2)
 SELECT user_id,date,nxt_date_active,nxt_nxt_date_active
 FROM cte3
 WHERE cons_num='1'
+```
 
 
 
 
 
+#### Find the top three distinct salaries for each department. Output the department name and the top 3 distinct salaries by each department. Order your results alphabetically by department and then by highest salary to lowest.
 
-
---Find the top three distinct salaries for each department. Output the department name and the top 3 distinct
---salaries by each department. Order your results alphabetically by department and then by highest salary to lowest.
-
+```sql
 CREATE TABLE emploee 
 (id INT PRIMARY KEY,first_name VARCHAR(50), 
 last_name VARCHAR(50), age INT, sex VARCHAR(1), 
 employee_title VARCHAR(50), department VARCHAR(50), 
 salary INT, target INT, bonus INT, city VARCHAR(50), 
 address VARCHAR(50), manager_id INT);
-
+```
+```sql
 INSERT INTO emploee
 (id, first_name, last_name, age, sex, employee_title, department, salary, target, bonus, city, address, manager_id) 
 VALUES (1, 'Allen', 'Wang', 55, 'F', 'Manager', 'Management', 200000, 0, 300, 'California', '23St', 1), 
@@ -206,7 +205,8 @@ VALUES (1, 'Allen', 'Wang', 55, 'F', 'Manager', 'Management', 200000, 0, 300, 'C
 (15, 'Michale', 'Jackson', 44, 'F', 'Auditor', 'Audit', 70000, 150, 150, 'Colorado', NULL, 11),
 (6, 'Molly', 'Sam', 28, 'F', 'Sales', 'Sales', 140000, 100, 150, 'Arizona', '24St', 13), 
 (7, 'Nicky', 'Bat', 33, 'F', 'Sales', 'Sales', NULL, NULL, NULL, NULL, NULL, NULL);
-
+```
+```sql
 SELECT * FROM emploee
 ORDER BY id
 
@@ -229,6 +229,7 @@ e1.department,CONCAT_WS(' ',e2.first_name,e2.last_name) AS manager_name
 FROM emploee AS e1
 INNER JOIN emploee AS e2
 ON e1.manager_id=e2.id
+```
 
 
 
@@ -237,12 +238,8 @@ ON e1.manager_id=e2.id
 
 
 
---Estimate the growth of Airbnb each year using the number of hosts registered as the growth metric.
---The rate of growth is calculated by taking ((number of hosts registered in the current year - number of hosts 
---registered in the previous year) / the number of hosts registered in the previous year) * 100.
---Output the year, number of hosts in the current year, number of hosts in the previous year, and the rate of growth. 
---Round the rate of growth to the nearest percent and order the result in the ascending order based on the year.
-
+#### Estimate the growth of Airbnb each year using the number of hosts registered as the growth metric.The rate of growth is calculated by taking ((number of hosts registered in the current year - number of hosts registered in the previous year) / the number of hosts registered in the previous year) * 100.Output the year, number of hosts in the current year, number of hosts in the previous year, and the rate of growth. Round the rate of growth to the nearest percent and order the result in the ascending order based on the year.
+```sql
 CREATE TABLE airbnb_search_detailsss
 (id INT PRIMARY KEY, price FLOAT, property_type VARCHAR(100), 
 room_type VARCHAR(100), amenities VARCHAR(100), accommodates INT, 
@@ -251,7 +248,8 @@ cleaning_fee INT8, city VARCHAR(100), host_identity_verified VARCHAR(10),
 host_response_rate VARCHAR(10), host_since DATE, 
 neighbourhood VARCHAR(100), number_of_reviews INT,
 review_scores_rating FLOAT, zipcode INT, bedrooms INT, beds INT);
-
+```
+```sql
 INSERT INTO airbnb_search_detailsss
 (id, price, property_type, room_type, amenities, accommodates, bathrooms, bed_type, cancellation_policy, 
 cleaning_fee , city, host_identity_verified, host_response_rate, host_since, neighbourhood, number_of_reviews, 
@@ -266,7 +264,8 @@ VALUES(1, 100, 'Apartment', 'Entire home/apt', 'WiFi, Kitchen', 2, 1, 'Real Bed'
 (8, 70, 'Apartment', 'Private room', 'WiFi', 2, 1, 'medium Bed', 'Flexible', 0, 'Austin', 'No', '75%', '2022-10-22', 'Downtown', 100, 4.4, 78751, 2, 1),
 (9, 100, 'Apartment', 'Private room', 'WiFi', 2, 1, 'Queen Bed', 'Moderate', 0, 'Los Angeles', 'No', '75%', '2018-11-22', 'Downtown', 100, 4.4, 98701, 1, 1),
 (10, 80, 'Apartment', 'Private room', 'WiFi', 2, 1, 'Queen Bed', 'Strict', 0, 'Austin', 'No', '75%', '2021-11-22', 'Downtown', 100, 4.4, 68701, 1, 1)
-
+```
+```sql
 SELECT * FROM airbnb_search_detailsss
 
 CREATE VIEW detail_yearss AS SELECT *, EXTRACT(YEAR FROM host_since)AS year
@@ -284,6 +283,7 @@ FROM cte2)
 SELECT year,host_num_current,host_num_prev,
 (((host_num_current-host_num_prev)/(CAST (host_num_prev AS FLOAT)))*100) AS growth_rate
 FROM cte3
+```
 
 
 
@@ -291,12 +291,9 @@ FROM cte3
 
 
 
+#### Calculate the share of new and existing users for each month in the table. Output the month, share of new users, and share of existing users as a ratio ,New users are defined as users who started using services in the current month (there is no usage history in previous months). Existing users are users who used services in the current month but also used services in any previous month. Assume that the dates are all from the year 2020
 
-----Calculate the share of new and existing users for each month in the table. Output the month, share of new users, 
---and share of existing users as a ratio ,New users are defined as users who started using services in the current 
---month (there is no usage history in previous months). Existing users are users who used services in the current 
---month but also used services in any previous month. Assume that the dates are all from the year 2020
-
+```sql
 CREATE TABLE events (
     id SERIAL PRIMARY KEY,
     time_id TIMESTAMP,
@@ -305,7 +302,8 @@ CREATE TABLE events (
     client_id VARCHAR(50),
     event_type VARCHAR(50),
     event_id INT);
-
+```
+```sql
 INSERT INTO events (time_id, user_id, customer_id, client_id, event_type, event_id)
 VALUES
 ('2020-01-05 12:00:00', 'user1', 'company1', 'mobile', 'login', 101),
@@ -319,6 +317,8 @@ VALUES
 ('2020-04-02 15:00:00', 'user6', 'company4', 'mobile', 'login', 109),
 ('2020-05-01 17:00:00', 'user7', 'company5', 'desktop', 'login', 110),
 ('2020-05-01 17:00:00', 'user6', 'company4', 'mobile', 'logout', 111);
+```
+```sql
 SELECT * FROM events
 
 CREATE VIEW new_exis_user AS WITH cte AS (SELECT *,EXTRACT(MONTH FROM time_id) AS month
@@ -340,6 +340,7 @@ SELECT month,new_user,existing_user,
 (new_user/(CAST((new_user+existing_user) AS FLOAT))) AS new_user_ratio,
 (existing_user/(CAST((new_user+existing_user)AS FLOAT))) AS existing_user_ratio
 FROM new_exis_user
+```
 
 
 
@@ -347,13 +348,8 @@ FROM new_exis_user
 
 
 
-----You are given the table with titles of recipes from a cookbook and their page numbers. You are asked to represent 
---how the recipes will be distributed in the book.
---Produce a table consisting of three columns:
---left_page_number, left_title and right_title. The k-th row (counting from 0), should contain the number 
---and the title of the page with the number 2xk in the first and second columns respectively, 
---and the title of the page with the number 2xk+1 in the third column.
-
+#### You are given the table with titles of recipes from a cookbook and their page numbers. You are asked to represent how the recipes will be distributed in the book.Produce a table consisting of three columns:left_page_number, left_title and right_title. The k-th row (counting from 0), should contain the number and the title of the page with the number 2xk in the first and second columns respectively, and the title of the page with the number 2xk+1 in the third column.
+```sql
 CREATE TABLE cookbook_titles 
 (page_number INT PRIMARY KEY,title VARCHAR(255));
 
@@ -362,7 +358,8 @@ VALUES (1, 'Scrambled eggs'), (2, 'Fondue'), (3, 'Sandwich'),
 (4, 'Tomato soup'), (6, 'Liver'), (11, 'Fried duck'), 
 (12, 'Boiled duck'), (15, 'Baked chicken');
 SELECT * FROM cookbook_titles
-
+```
+```sql
 CREATE VIEW right_odd AS SELECT page_number,title            --- right page as odd no.(given in ques 2k+1)
 FROM cookbook_titles
  WHERE page_number%2=1  
@@ -378,6 +375,7 @@ r.title AS right_title
 FROM left_even AS l
 LEFT JOIN right_odd AS r
 ON l.page_number+1 =r.page_number
+```
 
 
 
@@ -385,10 +383,9 @@ ON l.page_number+1 =r.page_number
 
 
 
---You are given a table of tennis players and their matches that they could either win (W) or lose (L). 
---Find the longest streak of wins. A streak is a set of consecutive won matches of one player. The streak 
---ends once a player loses their next match. Output the ID of the player or players and the length of the streak.
+#### You are given a table of tennis players and their matches that they could either win (W) or lose (L). Find the longest streak of wins. A streak is a set of consecutive won matches of one player. The streak ends once a player loses their next match. Output the ID of the player or players and the length of the streak.
 
+```sql
 CREATE TABLE players_results (match_date date , match_result VARCHAR(1), player_id BIGINT);
 
 INSERT INTO players_results (match_date, match_result, player_id) 
@@ -398,6 +395,8 @@ VALUES
 ('2023-01-03', 'W', 2), ('2023-01-04', 'W', 2), ('2023-01-05', 'L', 2), 
 ('2023-01-01', 'W', 3), ('2023-01-02', 'W', 3), ('2023-01-03', 'W', 3), 
 ('2023-01-04', 'W', 3), ('2023-01-05', 'L', 3);
+```
+```sql
 SELECT * FROM players_results
 
 WITH new_date AS (SELECT 
@@ -426,6 +425,7 @@ FROM final_dates
 GROUP BY 1
 ORDER BY length DESC
 LIMIT 1
+```
 
 
 
@@ -434,12 +434,9 @@ LIMIT 1
 
 
 
+#### Find the average absolute fare difference between a specific passenger and all passengers that belong to the same pclass, both are non-survivors and age difference between two of them is 5 or less years. Do that for each passenger (that satisfy above mentioned coniditions). Output the result along with the passenger name.
 
-
---Find the average absolute fare difference between a specific passenger and all passengers that belong to the 
---same pclass, both are non-survivors and age difference between two of them is 5 or less years. Do that for 
---each passenger (that satisfy above mentioned coniditions). Output the result along with the passenger name.
-
+```sql
 CREATE TABLE 
 titanic (passengerid BIGINT PRIMARY KEY, name VARCHAR(255), pclass BIGINT, survived BIGINT, age FLOAT, 
 fare FLOAT, cabin VARCHAR(50), embarked VARCHAR(1), parch BIGINT, sibsp BIGINT, ticket VARCHAR(50), sex VARCHAR(10));
@@ -456,7 +453,8 @@ VALUES (1, 'John Smith', 1, 0, 35, 71.28, 'C85', 'C', 0, 1, 'PC 17599', 'male'),
 (8, 'Sophia Anderson', 3, 1, 22, 8.05, NULL, 'S', 0, 0, '347082', 'female'), 
 (9, 'David Thomas', 1, 0, 36, 71.28, 'C85', 'C', 0, 1, 'PC 17599', 'male'), 
 (10, 'Alice Walker', 1, 0, 33, 53.1, 'C123', 'C', 0, 0, 'PC 17601', 'female');
-
+```
+```sql
 WITH cte AS(
 SELECT   -- for comparsion always use self joins
 ABS(t1.fare-t2.fare) AS nfare,
@@ -476,6 +474,7 @@ t1.survived=0 AND t2.survived=0)
 SELECT fname,AVG(nfare) AS avg_fare
 FROM cte
 GROUP BY fname
+```
 
 
 
@@ -485,10 +484,8 @@ GROUP BY fname
 
 
 
---You are given a table EmployeeLogs with columns EmployeeID, LoginTime, LogoutTime, and Date.
---Write a query to calculate the longest continuous working streak (consecutive days without missing a login) 
---for each employee.
-
+#### You are given a table EmployeeLogs with columns EmployeeID, LoginTime, LogoutTime, and Date.Write a query to calculate the longest continuous working streak (consecutive days without missing a login) for each employee.
+```sql
 CREATE TABLE EmployeeLogs (
     EmployeeID INT,
     LoginTime TIME,
@@ -510,6 +507,8 @@ INSERT INTO EmployeeLogs (EmployeeID, LoginTime, LogoutTime, Date) VALUES
     (2, '09:00:00', '17:00:00', '2024-07-04'),
     (2, '09:00:00', '17:00:00', '2024-07-05'),
     (2, '09:00:00', '17:00:00', '2024-07-06');
+```
+```sql
 SELECT * FROM EmployeeLogs
 
 WITH new_dates AS (SELECT employeeid,
@@ -530,6 +529,7 @@ COUNT(streak_group) AS days_in_streak
 FROM grouped_dates
 WHERE streak_group=0
 GROUP BY employeeid
+```
 
 
 
@@ -538,8 +538,10 @@ GROUP BY employeeid
 
 
 
--- Find cumulative percentage of total sales for each region
---Create table
+#### Find cumulative percentage of total sales for each region.
+
+```sql
+Create table
 CREATE TABLE SalesByRegion (
     Region VARCHAR(50),
     Order_Date DATE,
@@ -553,7 +555,8 @@ INSERT INTO SalesByRegion VALUES
 ('North', '2024-03-05', 5, 600),
 ('South', '2024-01-20', 2, 700),
 ('East', '2024-02-18', 4, 200);
-
+```
+```sql
 SELECT * FROM SalesByRegion
 
 WITH cte AS(SELECT region,order_Date,order_ID,amount,SUM(amount) OVER(PARTITION BY region) AS sum,
@@ -562,6 +565,7 @@ FROM SalesByRegion)
 
 SELECT region,(total_amount/CAST(sum AS FLOAT)*100) AS cumulative_percent
 FROM cte
+```
 
 
 
@@ -570,9 +574,9 @@ FROM cte
 
 
 
---Find first and last orders  placed by each customers based on order_date.
---Also find differnce in days between first and last orders
--- Create table
+#### Find first and last orders  placed by each customers based on order_date.Also find differnce in days between first and last orders.
+```sql
+ Create table
 CREATE TABLE CustomerOrders (
     Order_ID INT,
     Customer_ID INT,
@@ -587,6 +591,8 @@ INSERT INTO CustomerOrders VALUES
 (3, 101, '2024-02-10', 300),
 (4, 103, '2024-02-18', 200),
 (5, 101, '2024-03-05', 600)
+```
+```sql
 SELECT * FROM CustomerOrders
 
 WITH cte AS(SELECT order_ID,customer_id,order_date,
@@ -607,6 +613,7 @@ INNER JOIN cte2
 ON cte.customer_id=cte2.customer_id
 WHERE min_date IS NOT NULL
 AND max_date IS NOT NULL
+```
 
 
 
@@ -615,8 +622,8 @@ AND max_date IS NOT NULL
 
 
 
---27Th QUES linkedin GOLDMAN SACHS
-
+#### 27Th QUES linkedin GOLDMAN SACHS (NISHANT KUMAR)
+```sql
 SELECT * FROM train_departures
 SELECT * FROM train_arrival
 
@@ -632,6 +639,7 @@ FROM train_status)
 
 SELECT MAX(platforms_needed)
 FROM platforms
+```
 
 
 
@@ -639,12 +647,9 @@ FROM platforms
 
 
 
---Write a query to find the Market Share at the Product Brand level for each Territory, for Time Period Quarter4-2021. 
---Market Share is the number of Products of a certain Product Brand sold in a territory, divided by the total 
---number of Products sold in this Territory.
---Output the ID of the Territory, name of the Product Brand and the corresponding Market Share in percentages.
---Only include these Product Brands that had at least one sale in a given territory.
+#### Write a query to find the Market Share at the Product Brand level for each Territory, for Time Period Quarter4-2021. Market Share is the number of Products of a certain Product Brand sold in a territory, divided by the total number of Products sold in this Territory.Output the ID of the Territory, name of the Product Brand and the corresponding Market Share in percentages.Only include these Product Brands that had at least one sale in a given territory.
 
+```sql
 SELECT * FROM fct_customer_sales
 SELECT * FROM map_customer_territory
 SELECT * FROM dim_product
@@ -683,6 +688,7 @@ ON bi.territory_id=pi.territory_id)
 SELECT territory_id,brands,
 ROUND((prod_count/total_prod)*100,2) AS market_share
 FROM all_Info
+```
 
 
 
