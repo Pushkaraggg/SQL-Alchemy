@@ -691,6 +691,99 @@ FROM all_Info
 ```
 
 
+#### Retrieve Housing Data from Specific Cities
+#### You want to find all Airbnb listings in San Francisco and New York that have at least 10 reviews and an average rating equal to or above 4.5.
+```sql
+CREATE TABLE listings 
+( listing_id int8 PRIMARY KEY,
+name varchar(50), 
+city varchar(50), 
+reviews_count int
+);
+
+CREATE TABLE reviews 
+(listing_id int8 PRIMARY KEY, 
+review_id int8, 
+stars int, 
+submit_date date
+);
+```
+```sql
+SELECT * FROM reviews
+SELECT * FROM listings
+
+WITH my_cte AS (SELECT l.listing_id,ROUND(AVG(r.stars),1) AS avg_stars
+FROM listings AS l
+INNER JOIN reviews AS r
+ON l.listing_id=r.listing_id
+WHERE city IN ('New York','San Francisco')
+AND reviews_count >='10'
+GROUP BY 1
+)
+
+SELECT * FROM my_cte 
+WHERE avg_stars>=4.5
+```
+
+
+#### Find the Average Number of Guests per Booking in Each City for Airbnb
+```sql
+CREATE TABLE bookings
+(booking_id int8,
+property_id int8, 
+guests int8, 
+booking_date date);
+
+CREATE TABLE properties
+(property_id int8, 
+city varchar(50)
+);
+```
+```sql
+SELECT * FROM bookings
+SELECT * FROM properties
+
+SELECT booking_id,
+city, AVG(guests) AS avg_num_guests
+FROM bookings AS b
+INNER JOIN properties AS p
+ON b.property_id=p.property_id
+GROUP BY booking_id,city
+```
+
+#### Analyzing Click-Through Rates for Airbnb Listing Views and Bookings The CTR is calculated by dividing the number of bookings by the number of listing views, giving a proportion of views that resulted in a booking.
+```sql
+CREATE TABLE listing_views
+(view_id int8,
+user_id int8,
+visit_date date,
+listing_id int8 );
+SELECT * FROM bookings
+SELECT * FROM listing_views
+
+CREATE TABLE listings_views AS
+SELECT listing_id,
+COUNT(view_id) AS total_views_per_listing
+FROM listing_views 
+GROUP BY 1
+
+CREATE TABLE total_bookingss AS 
+SELECT COUNT(booking_id) AS total_bookings
+FROM bookings 
+
+
+SELECT*, 
+(total_bookingss/total_views_per_listing) AS CTR FROM 
+listings_views AS l 
+INNER JOIN total_bookings AS b
+ON l.listing_id=b.total_bookings
+```
+
+
+
+ 
+
+
 
 
 
