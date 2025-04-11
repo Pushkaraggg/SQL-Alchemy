@@ -16,9 +16,7 @@ ORDER BY 1 ASC
 CREATE VIEW cte2 AS SELECT *,
 LAG(current_rev,1) OVER(ORDER BY month) AS prev_revenue
 FROM cte1
-```
 
-```sql
 SELECT*,
 ((((current_rev-prev_revenue)/CAST(prev_revenue AS FLOAT))*100)) AS percentage
 FROM cte2
