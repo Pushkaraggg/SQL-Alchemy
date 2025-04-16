@@ -106,25 +106,28 @@ INSERT INTO supplier_inventor (supplier_id, product_id, stock_quantity, record_d
 
 
 ```sql
-WITH marked AS (
-  SELECT *,
-    CASE 
-      WHEN stock_quantity < 50 THEN 1
-      ELSE 0 
-    END AS is_low_stock
-  FROM supplier_inventor
-),
-ranked AS (
-  SELECT *,
-    LEAD(record_date) OVER (PARTITION BY supplier_id, product_id ORDER BY record_date) AS next_date,
-    LEAD(is_low_stock) OVER (PARTITION BY supplier_id, product_id ORDER BY record_date) AS next_is_low_stock
-  FROM marked
-)
-SELECT *
-FROM ranked
-WHERE is_low_stock = 1
-  AND next_is_low_stock = 1
-  AND next_date = record_date + INTERVAL '1 day';
+WITH consecutive_rec AS 
+(SELECT
+si.supplier_id,si.product_id,si.stock_quantity,si.record_date,
+LEAD(si.record_date) OVER(PARTITION BY si.supplier_id,si.product_id ORDER BY si.record_date) AS next_rec_date,
+sir.record_date AS next_date
+FROM
+supplier_inventor AS si
+JOIN
+supplier_inventor AS sir
+ON
+si.supplier_id=sir.supplier_id
+AND si.product_id=sir.product_id
+WHERE
+si.record_date = sir.record_date - INTERVAL'1 Day'
+AND si.stock_quantity < 50)
+
+SELECT
+supplier_id,product_id,stock_quantity,record_date,next_date
+FROM
+consecutive_rec
+WHERE next_rec_date = next_date
+OR next_rec_date IS NULL
 ```
 
 
