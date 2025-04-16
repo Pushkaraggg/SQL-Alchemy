@@ -1,6 +1,84 @@
 # SQL-Alchemy
 Dive into advanced SQL concepts and techniques with this repository. Explore complex queries, performance tuning, and data analysis through practical examples and projects. Ideal for those looking to expand their SQL expertise.
 
+#### Compute all pairs of politicians (pname1, pname2) such that pname1 invests in some company, and pname? invests in a subsidiary of that company. Sort your results by pname1, breaking ties oy pname2.For the given instance, you should return (Don, Hil) because Don invests in C1. Hil invests in C3, and C3 is a subsidiary of C1. You should not return (Don, Ron), who both invest in C1, because we don't consider a company to be a subsidlary of itself
+```sql
+CREATE TABLE Politician (
+    pname VARCHAR(10) PRIMARY KEY,
+    party CHAR(1)
+);
+
+CREATE TABLE Company (
+    cname VARCHAR(10) PRIMARY KEY,
+    revenue INT
+);
+
+CREATE TABLE Invested (
+    pname VARCHAR(10),
+    cname VARCHAR(10)
+);
+
+CREATE TABLE Subsidiary (
+    parent VARCHAR(10),
+    child VARCHAR(10)
+);
+```
+```sql
+-- Politicians
+INSERT INTO Politician (pname, party) VALUES
+('Don', 'R'),
+('Ron', 'R'),
+('Hil', 'D'),
+('Bill', 'D');
+
+-- Companies
+INSERT INTO Company (cname, revenue) VALUES
+('C1', 110),
+('C2', 30),
+('C3', 50),
+('C4', 250),
+('C5', 75),
+('C6', 15);
+
+-- Investments
+INSERT INTO Invested (pname, cname) VALUES
+('Don', 'C1'),
+('Don', 'C4'),
+('Ron', 'C1'),
+('Hil', 'C3');
+
+-- Subsidiary relationships
+INSERT INTO Subsidiary (parent, child) VALUES
+('C1', 'C2'),
+('C2', 'C3'),
+('C2', 'C5'),
+('C4', 'C6');
+```
+
+```sql
+CREATE VIEW subsidiary_subchilds AS
+SELECT s.parent,s.child,sb.child AS subchild
+FROM Subsidiary AS s
+JOIN Subsidiary AS sb
+ON s.child=sb.parent
+
+CREATE VIEW invest_child AS
+SELECT *
+FROM  Invested AS i 
+LEFT JOIN Subsidiary AS s
+ON i.cname=s.parent
+
+CREATE VIEW maintabl AS
+SELECT ic.cname,ic.pname,ic.parent,ic.child,subchild
+FROM invest_child AS ic
+LEFT JOIN subsidiary_subchilds AS s
+ON ic.cname=s.parent
+
+SELECT CONCAT_WS(' , ', mtl.pname,i.pname) AS Investors
+FROM maintabl AS mtl
+INNER JOIN Invested AS i
+ON mtl.subchild=i.cname
+```
 
 
 
