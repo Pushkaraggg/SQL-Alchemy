@@ -81,6 +81,54 @@ ON mtl.subchild=i.cname
 ```
 
 
+#### write an SQL query to find when stock quantity was below 50 units for more than two consecutive days.
+```sql
+CREATE TABLE supplier_inventor (
+  supplier_id VARCHAR,
+  product_id VARCHAR,
+  stock_quantity INT,
+  record_date DATE
+);
+
+INSERT INTO supplier_inventor (supplier_id, product_id, stock_quantity, record_date) VALUES
+('S1', 'P1', 45, '2025-04-01'),
+('S1', 'P1', 40, '2025-04-02'),
+('S1', 'P1', 42, '2025-04-03'),
+('S1', 'P1', 60, '2025-04-04'),
+('S1', 'P1', 38, '2025-04-05'),
+('S1', 'P1', 44, '2025-04-06'),
+('S2', 'P2', 70, '2025-04-01'),
+('S2', 'P2', 49, '2025-04-02'),
+('S2', 'P2', 48, '2025-04-03'),
+('S2', 'P2', 47, '2025-04-04'),
+('S2', 'P2', 90, '2025-04-05');
+```
+
+
+```sql
+WITH marked AS (
+  SELECT *,
+    CASE 
+      WHEN stock_quantity < 50 THEN 1
+      ELSE 0 
+    END AS is_low_stock
+  FROM supplier_inventor
+),
+ranked AS (
+  SELECT *,
+    LEAD(record_date) OVER (PARTITION BY supplier_id, product_id ORDER BY record_date) AS next_date,
+    LEAD(is_low_stock) OVER (PARTITION BY supplier_id, product_id ORDER BY record_date) AS next_is_low_stock
+  FROM marked
+)
+SELECT *
+FROM ranked
+WHERE is_low_stock = 1
+  AND next_is_low_stock = 1
+  AND next_date = record_date + INTERVAL '1 day';
+```
+
+
+
 
 #### Find % change in amazon revenue.
 ```sql
