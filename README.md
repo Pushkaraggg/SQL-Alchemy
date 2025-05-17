@@ -81,13 +81,33 @@ FROM cte
 #### Each Employee is assigned one territory and is responsible for the Customers from this territory. There may be multiple employees assigned to the same territory.Write a query to get the Employees who are responsible for the maximum number of Customers. Output the Employee ID and the number of Customers.
 
 ```sql
-CREATE TABLE map_employee_territry (empl_id VARCHAR(10), territory_id VARCHAR(10));
 
-INSERT INTO map_employee_territry (empl_id, territory_id) VALUES ('E849', 'T3'), ('E850', 'T3'), ('E851', 'T3'), ('E852', 'T1'), ('E853', 'T2'), ('E854', 'T5'), ('E855', 'T5'), ('E856', 'T4'), ('E857', 'T2');
+CREATE TABLE map_employee_territry
+(empl_id VARCHAR(10),
+territory_id VARCHAR(10));
 
-CREATE TABLE map_customer_territry (cust_id VARCHAR(10), territory_id VARCHAR(10));
+INSERT INTO map_employee_territry
+ (empl_id, territory_id)
+VALUES('E849', 'T3'), ('E850', 'T3'),
+('E851', 'T3'), ('E852', 'T1'),
+('E853', 'T2'), ('E854', 'T5'),
+('E855', 'T5'), ('E856', 'T4'),
+('E857', 'T2');
 
-INSERT INTO map_customer_territry (cust_id, territory_id) VALUES ('C273', 'T3'), ('C274', 'T3'), ('C275', 'T1'), ('C276', 'T1'), ('C277', 'T1'), ('C278', 'T2'), ('C279', 'T2'), ('C280', 'T4'), ('C281', 'T4'), ('C282', 'T4'), ('C283', 'T4'), ('C284', 'T5'), ('C285', 'T5'), ('C286', 'T3'), ('C287', 'T3');
+CREATE TABLE map_customer_territry
+(cust_id VARCHAR(10),
+territory_id VARCHAR(10));
+
+INSERT INTO map_customer_territry
+(cust_id, territory_id)
+VALUES('C273', 'T3'),
+ ('C274', 'T3'), ('C275', 'T1'),
+('C276', 'T1'), ('C277', 'T1'),
+ ('C278', 'T2'), ('C279', 'T2'),
+('C280', 'T4'), ('C281', 'T4'),
+('C282', 'T4'), ('C283', 'T4'),
+('C284', 'T5'), ('C285', 'T5'),
+ ('C286', 'T3'), ('C287', 'T3');
 
 
 WITH cte AS(
