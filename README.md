@@ -1,6 +1,109 @@
 # SQL-Alchemy
 Dive into advanced SQL concepts and techniques with this repository. Explore complex queries, performance tuning, and data analysis through practical examples and projects. Ideal for those looking to expand their SQL expertise.
 
+
+
+#### You own a small online store and want to analyze customer ratings for the products you’re selling. For each product category, find the lowest price among all products that received at least one 4-star or above rating from customers. If a product category did not have any such product, the price should be considered as 0. Sort the final output by category alphabetically.
+```sql
+INSERT INTO produc (id, name, category, price) VALUES
+
+(1, 'Phone', 'Electronic', 500),
+(2, 'Laptop', 'Electronic', 1000),
+(3, 'Shoes', 'Fashion', 150),
+(4, 'T-Shirt', 'Fashion', 50),
+(5, 'Mug', 'Home', 20);
+
+
+INSERT INTO purchases (id, product_id, stars) VALUES
+(1, 1, 5),
+(2, 2, 3),
+(3, 3, 4),
+(4, 4, 2),
+(5, 5, 1);
+
+SELECT * FROM purchases
+
+
+WITH cte AS(
+SELECT name,category,stars,price
+FROM produc  AS p
+LEFT JOIN purchases AS pr
+ON p.id=pr.product_id)
+
+SELECT Category,
+COALESCE(MIN(CASE WHEN stars>=4 THEN price END),0) AS price
+FROM cte
+GROUP BY 1
+ORDER BY 1
+```
+
+
+#### A group of travelers embark on world tours starting with their home cities. Each traveler has an undecided itinerary that evolves over the course of the tour. Some travelers decide to abruptly end their journey mid-travel and live in their last destination.Given the dataset of dates on which they travelled between different pairs of cities, can you find out how many travellers ended back in their home city? For simplicity, you can assume that each traveler made at most one tripbetween two cities in a day.
+```sql
+CREATE TABLE travel_history (
+date DATE, start_city VARCHAR(50), end_city VARCHAR(50), traveler VARCHAR(50));
+
+INSERT INTO 
+travel_history (date, start_city, end_city, traveler) 
+VALUES ('2024-01-01', 'Delhi', 'Dubai', 'Amit'),
+('2024-01-05', 'Dubai', 'London', 'Amit'), 
+('2024-01-10','London', 'Delhi', 'Amit'), 
+('2024-02-01', 'Mumbai','Singapore', 'Priya'), 
+('2024-02-05', 'Singapore', 'Sydney','Priya'), 
+('2024-02-10', 'Sydney', 'New York', 'Priya'),
+('2024-03-01', 'Kolkata', 'Bangkok', 'Raj'), 
+('2024-03-03','Bangkok', 'Tokyo', 'Raj'), 
+('2024-03-07', 'Tokyo', 'Kolkata','Raj'), 
+('2024-04-01', 'Bangalore', 'Paris', 'Neha'),
+('2024-04-05', 'Paris', 'Rome', 'Neha'), 
+('2024-04-10', 'Rome', 'Berlin', 'Neha'),
+('2024-05-01', 'Chennai', 'Dubai', 'Arjun'),
+('2024-05-03', 'Dubai', 'Amsterdam', 'Arjun'), 
+('2024-05-06','Amsterdam', 'Chennai', 'Arjun');
+
+
+
+With cte AS (
+SELECT * 
+FROM 
+travel_history AS t
+JOIN 
+ travel_history AS th
+ON t.traveler=th.traveler
+WHERE t.start_city=th.end_city
+AND t.date<th.date)
+
+SELECT COUNT(*) AS total_travelers
+FROM cte
+```
+
+
+#### Each Employee is assigned one territory and is responsible for the Customers from this territory. There may be multiple employees assigned to the same territory.Write a query to get the Employees who are responsible for the maximum number of Customers. Output the Employee ID and the number of Customers.
+
+```sql
+CREATE TABLE map_employee_territry (empl_id VARCHAR(10), territory_id VARCHAR(10));
+
+INSERT INTO map_employee_territry (empl_id, territory_id) VALUES ('E849', 'T3'), ('E850', 'T3'), ('E851', 'T3'), ('E852', 'T1'), ('E853', 'T2'), ('E854', 'T5'), ('E855', 'T5'), ('E856', 'T4'), ('E857', 'T2');
+
+CREATE TABLE map_customer_territry (cust_id VARCHAR(10), territory_id VARCHAR(10));
+
+INSERT INTO map_customer_territry (cust_id, territory_id) VALUES ('C273', 'T3'), ('C274', 'T3'), ('C275', 'T1'), ('C276', 'T1'), ('C277', 'T1'), ('C278', 'T2'), ('C279', 'T2'), ('C280', 'T4'), ('C281', 'T4'), ('C282', 'T4'), ('C283', 'T4'), ('C284', 'T5'), ('C285', 'T5'), ('C286', 'T3'), ('C287', 'T3');
+
+
+WITH cte AS(
+SELECT * 
+FROM map_employee_territry AS me
+RIGHT JOIN  
+map_customer_territry AS mc
+ON me.territory_id=mc.territory_id)
+
+SELECT empl_id,COUNT(cust_id)
+FROM cte
+GROUP BY empl_id 
+ORDER BY COUNT(cust_id) DESC
+LIMIT 5
+```
+
 #### Compute all pairs of politicians (pname1, pname2) such that pname1 invests in some company, and pname? invests in a subsidiary of that company. Sort your results by pname1, breaking ties oy pname2.For the given instance, you should return (Don, Hil) because Don invests in C1. Hil invests in C3, and C3 is a subsidiary of C1. You should not return (Don, Ron), who both invest in C1, because we don't consider a company to be a subsidlary of itself
 ```sql
 CREATE TABLE Politician (
