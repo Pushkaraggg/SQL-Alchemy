@@ -1,5 +1,5 @@
 # SQL-Alchemy
-Dive into advanced SQL concepts and techniques with this repository. Explore complex queries, performance tuning, and data analysis through practical examples and projects. Ideal for those looking to expand their SQL expertise.
+### Dive into advanced SQL concepts and techniques with this repository. Explore complex queries, performance tuning, and data analysis through practical examples and projects. Ideal for those looking to expand their SQL expertise.
 
 
 #### Each row in the flights table represents a single flight taken by a customer. A customer may have taken multiple connecting flights.The Task:For each customer (cust_id), identify: Their starting point (first origin) and their final destination (last destination)
@@ -21,7 +21,7 @@ INSERT INTO flight (cust_id, origin, destination) VALUES
 (3, 'N', 'O');
 ```
 
-	```sql
+```sql
 CREATE VIEW originn AS
 SELECT cust_id, origin
 FROM flight
