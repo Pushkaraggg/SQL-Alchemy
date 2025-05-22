@@ -2,6 +2,57 @@
 Dive into advanced SQL concepts and techniques with this repository. Explore complex queries, performance tuning, and data analysis through practical examples and projects. Ideal for those looking to expand their SQL expertise.
 
 
+#### Each row in the flights table represents a single flight taken by a customer. A customer may have taken multiple connecting flights.The Task:For each customer (cust_id), identify: Their starting point (first origin) and their final destination (last destination)
+
+```sql
+CREATE TABLE flight (
+    cust_id INT,
+    origin TEXT,
+    destination TEXT
+);
+
+INSERT INTO flight (cust_id, origin, destination) VALUES
+(1, 'A', 'B'),
+(1, 'B', 'C'),
+(1, 'C', 'D'),
+(2, 'X', 'Y'),
+(2, 'Y', 'Z'),
+(3, 'M', 'N'),
+(3, 'N', 'O');
+```
+
+	```sql
+CREATE VIEW originn AS
+SELECT cust_id, origin
+FROM flight
+
+CREATE VIEW destn AS
+SELECT cust_id, destination
+FROM flight
+
+With cte AS(
+SELECT o.cust_id,o.origin,d.destination
+FROM originn AS o
+LEFT JOIN destn AS d
+ON o.cust_id=d.cust_id
+AND o.origin=d.destination
+WHERE d.destination IS NULL),
+
+cte2 AS(
+SELECT d.cust_id,o.origin,d.destination
+FROM destn AS d
+LEFT JOIN originn AS o
+ON o.cust_id=d.cust_id
+AND o.origin=d.destination
+WHERE o.origin IS NULL)
+
+SELECT cte.cust_id,cte.origin,cte2.destination
+FROM cte
+INNER JOIN cte2
+ON cte.cust_id=cte2.cust_id
+```
+
+
 
 #### You own a small online store and want to analyze customer ratings for the products you’re selling. For each product category, find the lowest price among all products that received at least one 4-star or above rating from customers. If a product category did not have any such product, the price should be considered as 0. Sort the final output by category alphabetically.
 ```sql
