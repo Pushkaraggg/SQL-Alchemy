@@ -385,30 +385,31 @@ SELECT * FROM Trnsction
 SELECT * FROM Funds
 SELECT * FROM Customerss
 
-
-CREATE VIEW fund_perf AS  SELECT c.customerid,
-LEAD(customername) OVER(PARTITION BY c.customerid) AS lead_num,
-EXTRACT(MONTH FROM transactiondate) AS Month, 
+CREATE VIEW fund_perff AS  SELECT c.customerid,f.fundid,
+performancedate, 
 customername,performancetrend
 FROM Trnsction AS t
 INNER JOIN Customerss AS c
 ON t.customerid=c.customerid
 INNER JOIN FundPerformance AS f
 ON t.fundid=f.fundid
-WHERE performancetrend IN('Increasing','Decreasing') 
+WHERE performancedate >= performancedate - INTERVAL'6 months'
 
-WITH  cte2 AS (SELECT *,
-CASE 
-WHEN lead_num=customername THEN performancetrend ELSE NULL END AS performance_status
-FROM fund_perf)
+With cte AS(
+SELECT f.customerid,f.fundid,f.customername,CONCAT_WS(',',ff.performancetrend,f.performancetrend) AS trend_status
+FROM fund_perff AS f
+INNER JOIN fund_perff AS ff
+ON f.customerid=ff.customerid
+AND f.fundid=ff.fundid
+AND f.customername=ff.customername
+WHERE f.performancetrend != ff.performancetrend
+AND f.performancedate> ff.performancedate)
 
-SELECT customerid,performancetrend,customername FROM cte2
-WHERE performance_status IS NOT NULL
+SELECT customerid,COUNT(fundid) AS total_fund_invested,customername,trend_status 
+FROM cte
+GROUP BY 1,3,4
+HAVING COUNT(fundid)>1
 ```
-
-
-
-
 
 
 
