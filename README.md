@@ -280,30 +280,84 @@ INSERT INTO supplier_inventor (supplier_id, product_id, stock_quantity, record_d
 
 
 ```sql
-WITH consecutive_rec AS 
-(SELECT
-si.supplier_id,si.product_id,si.stock_quantity,si.record_date,
-LEAD(si.record_date) OVER(PARTITION BY si.supplier_id,si.product_id ORDER BY si.record_date) AS next_rec_date,
-sir.record_date AS next_date
-FROM
-supplier_inventor AS si
-JOIN
-supplier_inventor AS sir
-ON
-si.supplier_id=sir.supplier_id
-AND si.product_id=sir.product_id
-WHERE
-si.record_date = sir.record_date - INTERVAL'1 Day'
-AND si.stock_quantity < 50)
+METHOD 1
 
-SELECT
-supplier_id,product_id,stock_quantity,record_date,next_date
-FROM
-consecutive_rec
-WHERE next_rec_date = next_date
-OR next_rec_date IS NULL
+WITH low_stock AS (
+  SELECT *
+  FROM supplier_inventor
+  WHERE stock_quantity < 50
+),
+with_lead AS (
+  SELECT *,
+    LEAD(record_date) OVER (PARTITION BY supplier_id, product_id ORDER BY record_date) AS nxt_date
+  FROM low_stock
+),
+ flag AS(
+  SELECT *,
+    CASE 
+      WHEN nxt_date = record_date + INTERVAL '1 day' THEN 0
+      ELSE 1
+    END AS is_new_group
+  FROM with_lead
+),
+grouped AS (
+  SELECT *,
+    SUM(is_new_group) OVER (PARTITION BY supplier_id, product_id ORDER BY record_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS group_num
+  FROM flag
+),
+group_summary AS (
+  SELECT supplier_id, product_id, MIN(record_date) AS start_date, MAX(nxt_date) AS end_date, (MAX(nxt_date)-MIN(record_date))+1 AS days
+  FROM grouped
+  WHERE group_num=0
+  GROUP BY supplier_id, product_id, group_num
+)
+SELECT *
+FROM group_summary
+WHERE days > 2
+ORDER BY supplier_id, product_id, start_date;
 ```
 
+
+
+
+```sql
+METHOD 2
+
+WITH low_stock AS (
+  SELECT *
+  FROM supplier_inventor
+  WHERE stock_quantity < 50
+),
+grouped_stock AS (
+  SELECT
+    supplier_id,
+    product_id,
+    record_date,
+    ROW_NUMBER() OVER (PARTITION BY supplier_id, product_id ORDER BY record_date) AS rn
+  FROM low_stock
+),
+consecutive_groups AS (SELECT
+    supplier_id,
+    product_id,
+    record_date,
+    record_date - INTERVAL '1 day' * rn AS grp
+  FROM grouped_stock
+),
+group_summary AS (
+  SELECT
+    supplier_id,
+    product_id,
+    MIN(record_date) AS start_date,
+    MAX(record_date) AS end_date,
+    COUNT(*) AS consecutive_days
+  FROM consecutive_groups
+  GROUP BY supplier_id, product_id, grp
+)
+SELECT *
+FROM group_summary
+WHERE consecutive_days > 2
+ORDER BY supplier_id, product_id, start_date;
+```
 
 
 
@@ -814,6 +868,7 @@ INSERT INTO EmployeeLogs (EmployeeID, LoginTime, LogoutTime, Date) VALUES
 ```
 ```sql
 SELECT * FROM EmployeeLogs
+
 
 WITH new_dates AS (SELECT employeeid,
 date,(date + INTERVAL '1 day') AS next_date,
