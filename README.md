@@ -465,8 +465,8 @@ FROM cte
 GROUP BY 1,3,4
 HAVING COUNT(fundid)>1
 
-METHOD 2
 
+METHOD 2
 With  fund_perffff AS 
 (SELECT c.customerid,f.fundid,
 performancedate, 
@@ -478,7 +478,7 @@ INNER JOIN Customerss AS c
 ON t.customerid=c.customerid
 INNER JOIN FundPerformance AS f
 ON t.fundid=f.fundid
-WHERE performancedate >= CURRENT_DATE-INTERVAL'28 Months' )
+WHERE performancedate >= CURRENT_DATE-INTERVAL'6 Months' )
 
 
 SELECT customerid,customername,MIN(performancedate),MAX(nextdate),COUNT(DISTINCT fundid)
