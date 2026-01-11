@@ -802,6 +802,7 @@ VALUES
 ```sql
 SELECT * FROM players_results
 
+METHOD 1
 WITH new_date AS (SELECT 
 player_id,
 match_date,
@@ -827,6 +828,23 @@ COUNT(dense_rank) AS length
 FROM final_dates
 GROUP BY 1
 ORDER BY length DESC
+LIMIT 1
+
+METHOD 2
+
+WITH cte AS(SELECT player_id,match_date,match_result,
+ROW_NUMBER() OVER(PARTITION BY player_id ORDER BY match_date) AS number
+FROM players_results
+WHERE match_result ='W'),
+
+cte2 AS(SELECT player_id,match_result,match_date,
+match_date-INTERVAL'1 Day'*number AS date
+FROM cte)
+
+SELECT player_id, COUNT(*) AS length
+FROM cte2
+GROUP BY 1
+ORDER BY COUNT(*) DESC
 LIMIT 1
 ```
 
