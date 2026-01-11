@@ -706,6 +706,7 @@ VALUES
 ```sql
 SELECT * FROM events
 
+METHOD 1
 CREATE VIEW new_exis_user AS WITH cte AS (SELECT *,EXTRACT(MONTH FROM time_id) AS month
 FROM events),
 cte2 AS (SELECT *,
@@ -725,6 +726,23 @@ SELECT month,new_user,existing_user,
 (new_user/(CAST((new_user+existing_user) AS FLOAT))) AS new_user_ratio,
 (existing_user/(CAST((new_user+existing_user)AS FLOAT))) AS existing_user_ratio
 FROM new_exis_user
+
+METHOD 2
+With cte AS (SELECT id,time_id,user_id,event_type,EXTRACT(Month FROM time_id) AS month,
+ROW_NUMBER() OVER(PARTITION BY user_id ORDER BY time_id ASC) AS number
+FROM events),
+
+cte2 AS (SELECT month,
+COUNT(CASE WHEN number=1 THEN 1  END) AS New_User,
+COUNT(CASE WHEN number != 1 THEN 1 END) AS existing_user
+FROM cte
+GROUP BY 1
+ORDER BY 1)
+
+SELECT month,New_user,existing_user,
+(new_user/(CAST((new_user+existing_user) AS FLOAT))) AS new_user_ratio,
+(existing_user/(CAST((new_user+existing_user)AS FLOAT))) AS existing_user_ratio
+FROM cte2
 ```
 
 
