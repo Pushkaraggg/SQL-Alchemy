@@ -830,8 +830,8 @@ GROUP BY 1
 ORDER BY length DESC
 LIMIT 1
 
-METHOD 2
 
+METHOD 2
 WITH cte AS(SELECT player_id,match_date,match_result,
 ROW_NUMBER() OVER(PARTITION BY player_id ORDER BY match_date) AS number
 FROM players_results
@@ -1017,6 +1017,7 @@ INSERT INTO CustomerOrders VALUES
 ```sql
 SELECT * FROM CustomerOrders
 
+METHOD 1
 WITH cte AS(SELECT order_ID,customer_id,order_date,
 CASE WHEN order_date=MIN(Order_Date) OVER(PARTITION BY customer_ID) THEN order_date END AS min_date,
 Amount
@@ -1035,6 +1036,15 @@ INNER JOIN cte2
 ON cte.customer_id=cte2.customer_id
 WHERE min_date IS NOT NULL
 AND max_date IS NOT NULL
+
+METHOD 2
+SELECT
+    Customer_ID,
+    MIN(Order_Date) AS First_Order_Date,
+    MAX(Order_Date) AS Last_Order_Date,
+    MAX(Order_Date) - MIN(Order_Date) AS Days_Difference
+FROM CustomerOrders
+GROUP BY Customer_ID;
 ```
 
 
