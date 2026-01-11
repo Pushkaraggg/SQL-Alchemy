@@ -439,6 +439,7 @@ SELECT * FROM Trnsction
 SELECT * FROM Funds
 SELECT * FROM Customerss
 
+METHOD 1
 CREATE VIEW fund_perff AS  SELECT c.customerid,f.fundid,
 performancedate, 
 customername,performancetrend
@@ -463,6 +464,32 @@ SELECT customerid,COUNT(fundid) AS total_fund_invested,customername,trend_status
 FROM cte
 GROUP BY 1,3,4
 HAVING COUNT(fundid)>1
+
+METHOD 2
+
+With  fund_perffff AS 
+(SELECT c.customerid,f.fundid,
+performancedate, 
+customername,performancetrend,
+LEAD(performancedate) OVER(PARTITION BY c.customerid,t.fundid ORDER BY performancedate,t.fundid) AS nextdate,
+LEAD(performancetrend) OVER(PARTITION BY c.customerid,t.fundid ORDER BY performancedate,t.fundid) AS nextperftrend
+FROM Trnsction AS t
+INNER JOIN Customerss AS c
+ON t.customerid=c.customerid
+INNER JOIN FundPerformance AS f
+ON t.fundid=f.fundid
+WHERE performancedate >= CURRENT_DATE-INTERVAL'28 Months' )
+
+
+SELECT customerid,customername,MIN(performancedate),MAX(nextdate),COUNT(DISTINCT fundid)
+FROM fund_perffff
+WHERE ((performancetrend='Decreasing' AND nextperftrend='Increasing')
+OR
+(performancetrend='Increasing' AND nextperftrend='Decreasing'))
+AND nextdate IS NOT NULL 
+AND nextperftrend IS NOT NULL
+GROUP BY 1,2
+HAVING COUNT(DISTINCT fundid)>1
 ```
 
 
