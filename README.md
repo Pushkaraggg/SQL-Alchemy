@@ -22,6 +22,8 @@ INSERT INTO flight (cust_id, origin, destination) VALUES
 ```
 
 ```sql
+
+METHOD 1
 CREATE VIEW originn AS
 SELECT cust_id, origin
 FROM flight
@@ -50,6 +52,21 @@ SELECT cte.cust_id,cte.origin,cte2.destination
 FROM cte
 INNER JOIN cte2
 ON cte.cust_id=cte2.cust_id
+
+
+METHOD 2
+WITH cte AS (SELECT
+cust_id,
+origin,
+destination,
+ROW_NUMBER() OVER (PARTITION BY cust_id ORDER BY origin ASC) AS rn1,
+ROW_NUMBER() OVER (PARTITION BY cust_id ORDER BY destination DESC) AS rn2
+FROM flight)
+
+SELECT cust_id,MIN(origin), MAX(destination)
+FROM cte 
+WHERE rn1=1 or rn2=1
+GROUP BY cust_id
 ```
 
 
