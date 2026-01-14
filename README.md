@@ -24,34 +24,29 @@ INSERT INTO flight (cust_id, origin, destination) VALUES
 ```sql
 
 METHOD 1
-CREATE VIEW originn AS
-SELECT cust_id, origin
-FROM flight
-
-CREATE VIEW destn AS
-SELECT cust_id, destination
-FROM flight
-
-With cte AS(
-SELECT o.cust_id,o.origin,d.destination
-FROM originn AS o
-LEFT JOIN destn AS d
-ON o.cust_id=d.cust_id
-AND o.origin=d.destination
-WHERE d.destination IS NULL),
-
-cte2 AS(
-SELECT d.cust_id,o.origin,d.destination
-FROM destn AS d
-LEFT JOIN originn AS o
-ON o.cust_id=d.cust_id
-AND o.origin=d.destination
-WHERE o.origin IS NULL)
-
-SELECT cte.cust_id,cte.origin,cte2.destination
-FROM cte
-INNER JOIN cte2
-ON cte.cust_id=cte2.cust_id
+WITH start_points AS (
+    SELECT cust_id, origin
+    FROM flight 
+    WHERE origin NOT IN (
+        SELECT destination
+        FROM flight
+    )
+),
+end_points AS (
+    SELECT cust_id, destination
+    FROM flight 
+    WHERE destination NOT IN (
+        SELECT origin
+        FROM flight 
+    )
+)
+SELECT
+    s.cust_id,
+    s.origin AS start_point,
+    e.destination AS final_destination
+FROM start_points s
+JOIN end_points e
+ON s.cust_id = e.cust_id;
 
 
 METHOD 2
