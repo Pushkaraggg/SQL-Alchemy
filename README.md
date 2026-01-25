@@ -65,6 +65,37 @@ GROUP BY cust_id
 ```
 
 
+####Find products with a strictly increasing sales trend over the last 3 consecutive months
+```sql
+SELECT * FROM sales
+
+
+WITH monthly_sales AS (
+SELECT
+product_id,
+DATE_TRUNC('month', sale_date) AS sales_period,  
+SUM(amount) AS total_sales
+FROM sales
+WHERE sale_date > DATE'2024-04-01' - INTERVAL'3 Months' -- add CURRENT_DATE for dynamic changes
+GROUP BY product_id, DATE_TRUNC('month', sale_date)
+ORDER BY product_id, DATE_TRUNC('month', sale_date)),
+
+lag_flag AS (SELECT product_id,sales_period,total_sales,
+ROW_NUMBER() OVER(PARTITION BY product_id ORDER BY sales_period) AS num_by_date,
+LAG(total_sales) OVER(PARTITION BY product_id) AS prev_sales
+FROM monthly_sales),
+
+end_Flag AS (SELECT product_id, COUNT(sales_period - INTERVAL '1 month'* num_by_date) AS cons_month,
+SUM(CASE WHEN prev_sales IS NOT NULL AND prev_sales < total_sales THEN 1 ELSE 0 END) AS sum_flag
+FROM lag_Flag
+GROUP BY product_id
+HAVING COUNT(sales_period - INTERVAL '1 month'* num_by_date)=3)
+
+SELECT product_id
+FROM end_Flag
+WHERE sum_Flag=2
+```
+
 
 #### You own a small online store and want to analyze customer ratings for the products you’re selling. For each product category, find the lowest price among all products that received at least one 4-star or above rating from customers. If a product category did not have any such product, the price should be considered as 0. Sort the final output by category alphabetically.
 ```sql
