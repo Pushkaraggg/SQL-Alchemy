@@ -65,7 +65,7 @@ GROUP BY cust_id
 ```
 
 
-####Find products with a strictly increasing sales trend over the last 3 consecutive months
+#### Find products with a strictly increasing sales trend over the last 3 consecutive months
 ```sql
 SELECT * FROM sales
 
