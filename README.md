@@ -64,6 +64,59 @@ WHERE rn1=1 or rn2=1
 GROUP BY cust_id
 ```
 
+#### Calculate  customer Churn(Customers active in previous month but not in current month).
+```sql
+With cte AS (SELECT customer_id,activity_date,DATE_TRUNC('month',activity_date) AS date 
+FROM customer_activity
+ORDER BY customer_id,activity_date),
+
+cte2 AS (SELECT cte.customer_id,cte.date,cte2.customer_id AS curr_cust_id
+FROM cte 
+LEFT JOIN cte AS cte2
+ON cte.customer_id=cte2.customer_id
+AND cte2.date = cte.date + INTERVAL '1 month'
+WHERE cte2.customer_id IS NULL)
+
+SELECT date+INTERVAL'1 Month' AS month,COUNT(*) AS churn_users
+FROM cte2
+GROUP BY date+INTERVAL'1 Month'
+```
+#### Detect products that were never sold in consecutive months.
+```sql
+With cte AS (
+SELECT *,DATE_TRUNC('month',sale_date) AS date
+FROM prod_sales),
+
+cte2 AS (SELECT *, Lead(date) OVER(PARTITION BY product_id ORDER BY date) AS lead_date,
+DENSE_RANK() OVER(PARTITION BY product_id ORDER BY date) AS rn
+FROM cte),
+
+cte3 AS (SELECT product_id,(date - INTERVAL'1 Month' * rn) AS grp,COUNT(*) 
+FROM cte2
+WHERE product_id IN (SELECT product_id FROM cte2 WHERE lead_date = date+ INTERVAL'1 Month')
+GROUP BY product_id,(date - INTERVAL'1 Month' * rn)
+HAVING COUNT(*)>=2)
+
+SELECT DISTINCT product_id
+FROM cte2
+WHERE product_id NOT IN (SELECT product_id FROM cte3)
+```
+
+#### Running Total + YoY Growth
+```sql
+With cte AS (SELECT customer_id,DATE_TRUNC('Year',transaction_date) AS txn_date,SUM(amount) AS ttl
+FROM txn
+GROUP BY customer_id,DATE_TRUNC('Year',transaction_date)
+ORDER BY txn_date),
+
+cte2 AS (SELECT customer_id,ttl,txn_date,
+SUM(ttl) OVER(PARTITION BY customer_id ORDER BY txn_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_ttl,
+LAG(ttl) OVER(PARTITION BY customer_id ORDER BY txn_date) AS prev_ttl
+FROM cte)
+
+SELECT customer_id,ttl,txn_date,running_ttl,CONCAT(COALESCE(ROUND(((ttl-prev_ttl)*100/prev_ttl),2),0),'%') AS YoY
+FROM cte2
+```
 
 #### Find products with a strictly increasing sales trend over the last 3 consecutive months
 ```sql
