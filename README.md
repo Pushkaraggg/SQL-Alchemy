@@ -326,28 +326,21 @@ INSERT INTO Subsidiary (parent, child) VALUES
 ```
 
 ```sql
-CREATE VIEW subsidiary_subchilds AS
+With cte AS (
 SELECT s.parent,s.child,sb.child AS subchild
 FROM Subsidiary AS s
 JOIN Subsidiary AS sb
-ON s.child=sb.parent
+ON s.child=sb.parent),
 
-CREATE VIEW invest_child AS
-SELECT *
+cte2 AS (SELECT *
 FROM  Invested AS i 
-LEFT JOIN Subsidiary AS s
-ON i.cname=s.parent
+LEFT JOIN cte 
+ON i.cname=cte.parent)
 
-CREATE VIEW maintabl AS
-SELECT ic.cname,ic.pname,ic.parent,ic.child,subchild
-FROM invest_child AS ic
-LEFT JOIN subsidiary_subchilds AS s
-ON ic.cname=s.parent
-
-SELECT CONCAT_WS(' , ', mtl.pname,i.pname) AS Investors
-FROM maintabl AS mtl
-INNER JOIN Invested AS i
-ON mtl.subchild=i.cname
+SELECT CONCAT_WS(' , ', cte2.pname,i.pname) AS Investors
+FROM cte2
+JOIN cte2 AS i
+ON cte2.subchild=i.cname
 ```
 
 
