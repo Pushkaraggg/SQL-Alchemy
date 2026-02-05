@@ -138,15 +138,16 @@ ROW_NUMBER() OVER(PARTITION BY product_id ORDER BY sales_period) AS num_by_date,
 LAG(total_sales) OVER(PARTITION BY product_id) AS prev_sales
 FROM monthly_sales),
 
-end_Flag AS (SELECT product_id, COUNT(sales_period - INTERVAL '1 month'* num_by_date) AS cons_month,
+end_Flag AS (SELECT product_id, (sales_period - INTERVAL '1 month'* num_by_date) AS cons_month,
 SUM(CASE WHEN prev_sales IS NOT NULL AND prev_sales < total_sales THEN 1 ELSE 0 END) AS sum_flag
 FROM lag_Flag
-GROUP BY product_id
-HAVING COUNT(sales_period - INTERVAL '1 month'* num_by_date)=3)
+GROUP BY product_id, (sales_period - INTERVAL '1 month'* num_by_date)
+HAVING COUNT(*)=3)
 
 SELECT product_id
 FROM end_Flag
 WHERE sum_Flag=2
+ORDER BY product_id
 ```
 
 
