@@ -567,18 +567,17 @@ INNER JOIN Customerss AS c
 ON t.customerid=c.customerid
 INNER JOIN FundPerformance AS f
 ON t.fundid=f.fundid
-WHERE performancedate >= CURRENT_DATE-INTERVAL'6 Months' )
+WHERE performancedate >= performancedate - INTERVAL'6 Months' )
 
 
 SELECT customerid,customername,MIN(performancedate),MAX(nextdate),COUNT(DISTINCT fundid)
 FROM fund_perffff
-WHERE ((performancetrend='Decreasing' AND nextperftrend='Increasing')
-OR
-(performancetrend='Increasing' AND nextperftrend='Decreasing'))
+WHERE performancetrend !=nextperftrend
 AND nextdate IS NOT NULL 
 AND nextperftrend IS NOT NULL
 GROUP BY 1,2
 HAVING COUNT(DISTINCT fundid)>1
+
 ```
 
 
