@@ -1067,14 +1067,38 @@ INSERT INTO SalesByRegion VALUES
 ('East', '2024-02-18', 4, 200);
 ```
 ```sql
-SELECT * FROM SalesByRegion
+--for cumulative sum by each region/ttl_amount w/o region condition in den.
+With cte AS (SELECT region, amount,
+SUM(amount) OVER(PARTITION BY region ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS sum_e
+FROM SalesByRegion),
 
-WITH cte AS(SELECT region,order_Date,order_ID,amount,SUM(amount) OVER(PARTITION BY region) AS sum,
-SUM(amount) OVER(PARTITION BY region ORDER BY order_Date ASC ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS total_amount
-FROM SalesByRegion)
+cte2 AS (SELECT SUM(amount)  AS ttl_sum
+FROM SalesByRegion
+)
 
-SELECT region,(total_amount/CAST(sum AS FLOAT)*100) AS cumulative_percent
+SELECT cte.region,cte.amount,cte.sum_e,cte2.ttl_sum,
+ROUND((sum_e*100/ttl_sum),2)
 FROM cte
+CROSS JOIN cte2
+
+
+
+--for cumulative sum by each region/ttl_amount w region condition in den.
+With cte AS (SELECT region, amount,
+SUM(amount) OVER(PARTITION BY region ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS sum_e
+FROM SalesByRegion),
+
+cte2 AS (SELECT region, SUM(amount)  AS ttl_sum
+FROM SalesByRegion
+GROUP BY region
+)
+
+SELECT cte.region,cte.amount,cte.sum_e,cte2.ttl_sum,
+ROUND((sum_e*100/ttl_sum),2)
+FROM cte
+INNER JOIN cte2
+ON cte.region=cte2.region
+
 ```
 
 
