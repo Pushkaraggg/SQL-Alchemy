@@ -271,7 +271,7 @@ ORDER BY COUNT(cust_id) DESC
 LIMIT 5
 ```
 
-#### Compute all pairs of politicians (pname1, pname2) such that pname1 invests in some company, and pname? invests in a subsidiary of that company. Sort your results by pname1, breaking ties oy pname2.For the given instance, you should return (Don, Hil) because Don invests in C1. Hil invests in C3, and C3 is a subsidiary of C1. You should not return (Don, Ron), who both invest in C1, because we don't consider a company to be a subsidlary of itself
+#### Compute all pairs of politicians (pname1, pname2) such that pname1 invests in some company, and pname2 invests in a subsidiary of that company. Sort your results by pname1, breaking ties by pname2.For the given instance, you should return (Don, Hil) because Don invests in C1. Hil invests in C3, and C3 is a subsidiary of C1. You should not return (Don, Ron), who both invest in C1, because we don't consider a company to be a subsidlary of itself
 ```sql
 CREATE TABLE Politician (
     pname VARCHAR(10) PRIMARY KEY,
@@ -395,7 +395,7 @@ grouped AS (
   FROM flag
 ),
 group_summary AS (
-  SELECT supplier_id, product_id, MIN(record_date) AS start_date, MAX(nxt_date) AS end_date, (MAX(nxt_date)-MIN(record_date))+1 AS days
+  SELECT supplier_id, product_id, MIN(record_date) AS start_date, MAX(nxt_date) AS end_date, (MAX(nxt_date)-MIN(record_date))+1 AS days,COUNT(*)+1 AS Consecutive_days
   FROM grouped
   WHERE group_num=0
   GROUP BY supplier_id, product_id, group_num
