@@ -372,6 +372,7 @@ INSERT INTO supplier_inventor (supplier_id, product_id, stock_quantity, record_d
 ```sql
 METHOD 1
 
+
 WITH low_stock AS (
   SELECT *
   FROM supplier_inventor
@@ -394,17 +395,13 @@ grouped AS (
   SELECT *,
     SUM(is_new_group) OVER (PARTITION BY supplier_id, product_id ORDER BY record_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS group_num
   FROM flag
-),
-group_summary AS (
-  SELECT supplier_id, product_id, MIN(record_date) AS start_date, MAX(nxt_date) AS end_date, (MAX(nxt_date)-MIN(record_date))+1 AS days,COUNT(*)+1 AS Consecutive_days
+)
+  SELECT supplier_id, product_id, MIN(record_date) AS start_date, MAX(nxt_date) AS end_date, COUNT(*)+1 AS Consecutive_days
   FROM grouped
   WHERE group_num=0
   GROUP BY supplier_id, product_id, group_num
-)
-SELECT *
-FROM group_summary
-WHERE days > 2
-ORDER BY supplier_id, product_id, start_date;
+  HAVING COUNT(*)+1 >=3
+
 ```
 
 
